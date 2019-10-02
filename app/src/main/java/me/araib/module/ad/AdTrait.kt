@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.annotation.IdRes
 import androidx.fragment.app.FragmentManager
 import me.araib.core.utils.ExposedClass
+import me.araib.core.utils.ExposedImplementFunction
 import me.araib.core.utils.ExposedProvideFunction
 import me.araib.core.utils.PossibleValues
 
@@ -20,6 +21,13 @@ import me.araib.core.utils.PossibleValues
     ]
 )
 interface AdTrait {
+    @ExposedImplementFunction(purpose = "For initializing trait with context")
+    @PossibleValues(
+        name = "context",
+        values = [
+            "Context -> Sets lifecycle observer on this context"
+        ]
+    )
     fun initAdTrait(context: Context)
 
     @ExposedProvideFunction(purpose = "For showing interstitial ads from Facebook fallback Google")
