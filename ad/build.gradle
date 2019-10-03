@@ -8,7 +8,7 @@ ext {
     GROUP_ID = 'araib.me'
     ARTIFACT_ID = 'ad'
     CORE_VERSION = '0.1.4'
-    VERSION = '.1'
+    VERSION = '.2'
 }
 
 android {

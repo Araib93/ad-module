@@ -51,7 +51,7 @@ class AdFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_ad, container, false)
+        val view = inflater.inflate(R.layout.fragment_ad, container, false) as FrameLayout
 
         val facebookAdView =
             com.facebook.ads.AdView(context, facebookAdId, com.facebook.ads.AdSize.BANNER_HEIGHT_50)
@@ -74,8 +74,8 @@ class AdFragment : Fragment() {
                     }
                 }
 
-                view.container.removeView(facebookAdView)
-                view.container.addView(adMobAdView)
+                view.removeView(facebookAdView)
+                view.addView(adMobAdView)
                 adMobAdView.loadAd(AdRequest.Builder().build())
             }
 
@@ -88,7 +88,7 @@ class AdFragment : Fragment() {
             }
         })
 
-        (view as FrameLayout).addView(facebookAdView)
+        view.addView(facebookAdView)
         facebookAdView.loadAd()
 
         return view
