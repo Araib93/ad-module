@@ -19,14 +19,14 @@ class AdFragment : Fragment() {
     companion object {
         fun getInstance(
             facebookAdId: String,
-            googleAdId: String,
+            adMobAdId: String,
             onBannerFailedToLoad: (() -> Unit)? = null
         ): AdFragment {
             val fragment = AdFragment()
             fragment.arguments = bundleOf(
                 "data" to bundleOf(
                     "facebookAdId" to facebookAdId,
-                    "googleAdId" to googleAdId
+                    "adMobAdId" to adMobAdId
                 )
             )
             fragment.onBannerFailedToLoad = onBannerFailedToLoad
@@ -40,9 +40,9 @@ class AdFragment : Fragment() {
         arguments?.getBundle("data")?.getString("facebookAdId")
             ?: throw IllegalArgumentException("Facebook ad id not found")
     }
-    private val googleAdId by lazy {
-        arguments?.getBundle("data")?.getString("googleAdId")
-            ?: throw IllegalArgumentException("Google ad id not found")
+    private val adMobAdId by lazy {
+        arguments?.getBundle("data")?.getString("adMobAdId")
+            ?: throw IllegalArgumentException("AdMob ad id not found")
     }
 
     override fun onCreateView(
@@ -61,11 +61,11 @@ class AdFragment : Fragment() {
 
             override fun onError(p0: Ad?, p1: AdError?) {
                 Log.e("Trait: Ad", "Facebook: ${p1?.errorMessage ?: "AdError is null"}")
-                val googleAdView = AdView(context)
-                googleAdView.adSize = AdSize.BANNER
-                googleAdView.adUnitId = googleAdId
+                val adMobAdView = AdView(context)
+                adMobAdView.adSize = AdSize.BANNER
+                adMobAdView.adUnitId = adMobAdId
 
-                googleAdView.adListener = object : com.google.android.gms.ads.AdListener() {
+                adMobAdView.adListener = object : com.google.android.gms.ads.AdListener() {
                     override fun onAdFailedToLoad(p0: Int) {
                         super.onAdFailedToLoad(p0)
                         Log.e("Trait: Ad", "Google: $p0")
@@ -74,8 +74,8 @@ class AdFragment : Fragment() {
                 }
 
                 view.container.removeView(facebookAdView)
-                view.container.addView(googleAdView)
-                googleAdView.loadAd(AdRequest.Builder().build())
+                view.container.addView(adMobAdView)
+                adMobAdView.loadAd(AdRequest.Builder().build())
             }
 
             override fun onAdLoaded(p0: Ad?) {

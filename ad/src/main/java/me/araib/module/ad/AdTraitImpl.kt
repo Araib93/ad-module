@@ -10,8 +10,10 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
 import com.facebook.ads.Ad
 import com.facebook.ads.AdError
+import com.facebook.ads.AudienceNetworkAds
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.MobileAds
 
 class AdTraitImpl : LifecycleObserver, AdTrait {
     private var context: Context? = null
@@ -30,7 +32,7 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
 
     override fun showInterstitialAd(
         facebookAdId: String,
-        googleAdId: String,
+        adMobAdId: String,
         onAdDismiss: (() -> Unit)?
     ) {
         val facebookInterstitialAd = com.facebook.ads.InterstitialAd(context, facebookAdId)
@@ -49,11 +51,11 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
             }
 
             override fun onError(p0: Ad?, p1: AdError?) {
-                val googleInterstitialAd = com.google.android.gms.ads.InterstitialAd(context)
+                val adMobInterstitialAd = com.google.android.gms.ads.InterstitialAd(context)
 
-                googleInterstitialAd.adUnitId = googleAdId
+                adMobInterstitialAd.adUnitId = adMobAdId
 
-                googleInterstitialAd.adListener = object : AdListener() {
+                adMobInterstitialAd.adListener = object : AdListener() {
                     override fun onAdFailedToLoad(p0: Int) {
                         super.onAdFailedToLoad(p0)
                         Log.e("Trait: Ad", "Unable to load ad")
@@ -65,7 +67,7 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
                     }
                 }
 
-                googleInterstitialAd.loadAd(AdRequest.Builder().build())
+                adMobInterstitialAd.loadAd(AdRequest.Builder().build())
             }
 
             override fun onAdLoaded(p0: Ad?) {
@@ -85,14 +87,20 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
         fragmentManager: FragmentManager,
         @IdRes replaceLayout: Int,
         facebookAdId: String,
-        googleAdId: String,
+        adMobAdId: String,
+        adMobAppId: String,
         onBannerFailedToLoad: (() -> Unit)?
     ) {
-        adFragment = AdFragment.getInstance(facebookAdId, googleAdId, onBannerFailedToLoad)
-        fragmentManager
-            .beginTransaction()
-            .replace(replaceLayout, adFragment)
-            .commit()
+        context?.let { context ->
+            AudienceNetworkAds.initialize(context.applicationContext)
+            MobileAds.initialize(context.applicationContext, adMobAdId)
+
+            adFragment = AdFragment.getInstance(facebookAdId, adMobAdId, onBannerFailedToLoad)
+            fragmentManager
+                .beginTransaction()
+                .replace(replaceLayout, adFragment)
+                .commit()
+        }
     }
 
     override fun removeBannerAd(fragmentManager: FragmentManager): Boolean {

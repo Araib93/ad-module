@@ -10,7 +10,7 @@ import me.araib.core.utils.PossibleValues
 
 @ExposedClass(
     author = "m.araib.shafiq@gmail.com",
-    purpose = "Trait class extension for easy handling of Facebook and Google ads",
+    purpose = "Trait class extension for easy handling of Facebook and AdMob ads",
     provides = [
         "showBannerAd",
         "removeBannerAd",
@@ -30,14 +30,14 @@ interface AdTrait {
     )
     fun initAdTrait(context: Context)
 
-    @ExposedProvideFunction(purpose = "For showing interstitial ads from Facebook fallback Google")
+    @ExposedProvideFunction(purpose = "For showing interstitial ads from Facebook fallback AdMob")
     @PossibleValues(
         name = "facebookAdId",
         values = ["String -> Interstitial ad id for Facebook"]
     )
     @PossibleValues(
-        name = "googleAdId",
-        values = ["String -> Interstitial ad id for Google"]
+        name = "adMobAdId",
+        values = ["String -> Interstitial ad id for AdMob"]
     )
     @PossibleValues(
         name = "onAdDismiss",
@@ -48,7 +48,7 @@ interface AdTrait {
     )
     fun showInterstitialAd(
         facebookAdId: String,
-        googleAdId: String,
+        adMobAdId: String,
         onAdDismiss: (() -> Unit)? = null
     )
 
@@ -66,8 +66,12 @@ interface AdTrait {
         values = ["String -> Banner ad id for Facebook"]
     )
     @PossibleValues(
-        name = "googleAdId",
-        values = ["String -> Banner ad id for Google"]
+        name = "adMobAdId",
+        values = ["String -> Banner ad id for AdMob"]
+    )
+    @PossibleValues(
+        name = "adMobAppId",
+        values = ["String -> App id for AdMob"]
     )
     @PossibleValues(
         name = "onBannerFailedToLoad",
@@ -80,7 +84,8 @@ interface AdTrait {
         fragmentManager: FragmentManager,
         @IdRes replaceLayout: Int,
         facebookAdId: String,
-        googleAdId: String,
+        adMobAdId: String,
+        adMobAppId: String,
         onBannerFailedToLoad: (() -> Unit)? = null
     )
 
