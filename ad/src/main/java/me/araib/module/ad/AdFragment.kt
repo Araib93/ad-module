@@ -1,5 +1,6 @@
 package me.araib.module.ad
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -13,8 +14,7 @@ import com.facebook.ads.AdError
 import com.facebook.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
-import com.google.android.gms.ads.AdView
-import kotlinx.android.synthetic.main.fragment_ad.view.*
+import kotlinx.android.synthetic.main.fragment_ad.*
 
 class AdFragment : Fragment() {
     companion object {
@@ -35,6 +35,9 @@ class AdFragment : Fragment() {
         }
     }
 
+    private lateinit var facebookAdView : com.facebook.ads.AdView
+    private lateinit var adMobAdView : com.google.android.gms.ads.AdView
+
     var onBannerFailedToLoad: (() -> Unit)? = null
 
     private val facebookAdId by lazy {
@@ -51,7 +54,13 @@ class AdFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_ad, container, false) as FrameLayout
+        return inflater.inflate(R.layout.fragment_ad, container, false) as FrameLayout
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if (::facebookAdView.isInitialized && ::adMobAdView.isInitialized)
+            return
 
         val facebookAdView =
             com.facebook.ads.AdView(context, facebookAdId, com.facebook.ads.AdSize.BANNER_HEIGHT_50)
@@ -62,7 +71,7 @@ class AdFragment : Fragment() {
 
             override fun onError(p0: Ad?, p1: AdError?) {
                 Log.e("Trait: Ad", "Facebook: ${p1?.errorMessage ?: "AdError is null"}")
-                val adMobAdView = AdView(context)
+                adMobAdView = com.google.android.gms.ads.AdView(context)
                 adMobAdView.adSize = AdSize.BANNER
                 adMobAdView.adUnitId = adMobAdId
 
@@ -74,8 +83,8 @@ class AdFragment : Fragment() {
                     }
                 }
 
-                view.removeView(facebookAdView)
-                view.addView(adMobAdView)
+                container.removeView(facebookAdView)
+                container.addView(adMobAdView)
                 adMobAdView.loadAd(AdRequest.Builder().build())
             }
 
@@ -88,9 +97,7 @@ class AdFragment : Fragment() {
             }
         })
 
-        view.addView(facebookAdView)
+        container.addView(facebookAdView)
         facebookAdView.loadAd()
-
-        return view
     }
 }
