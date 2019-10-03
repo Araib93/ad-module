@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import com.facebook.ads.Ad
@@ -87,7 +88,7 @@ class AdFragment : Fragment() {
             }
         })
 
-        view.container.addView(facebookAdView)
+        (view as FrameLayout).addView(facebookAdView)
         facebookAdView.loadAd()
 
         return view
