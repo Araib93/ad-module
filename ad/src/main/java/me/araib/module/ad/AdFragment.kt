@@ -25,26 +25,8 @@ class AdFragment : Fragment() {
 
     var onBannerFailedToLoad: (() -> Unit)? = null
 
-    private val facebookAdView by lazy {
-        com.facebook.ads.AdView(
-            context,
-            facebookAdId,
-            com.facebook.ads.AdSize.BANNER_HEIGHT_50
-        )
-    }
-    private val adMobAdView by lazy {
-        com.google.android.gms.ads.AdView(context).apply {
-            adSize = AdSize.BANNER
-            adUnitId = adMobAdId
-            adListener = object : com.google.android.gms.ads.AdListener() {
-                override fun onAdFailedToLoad(p0: Int) {
-                    super.onAdFailedToLoad(p0)
-                    Log.e("Trait: Ad", "Google: $p0")
-                    onBannerFailedToLoad?.invoke()
-                }
-            }
-        }
-    }
+    private lateinit var facebookAdView: com.facebook.ads.AdView
+    private lateinit var adMobAdView: com.google.android.gms.ads.AdView
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -53,6 +35,11 @@ class AdFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_ad, parent, false)
         val container = view.findViewById<FrameLayout?>(R.id.container)
+        com.facebook.ads.AdView(
+            view.context,
+            facebookAdId,
+            com.facebook.ads.AdSize.BANNER_HEIGHT_50
+        )
 
         facebookAdView.setAdListener(object : AdListener {
             override fun onAdClicked(p0: Ad?) {
@@ -61,6 +48,18 @@ class AdFragment : Fragment() {
 
             override fun onError(p0: Ad?, p1: AdError?) {
                 Log.e("Trait: Ad", "Facebook: ${p1?.errorMessage ?: "AdError is null"}")
+                adMobAdView = com.google.android.gms.ads.AdView(view.context).apply {
+                    adSize = AdSize.BANNER
+                    adUnitId = adMobAdId
+                    adListener = object : com.google.android.gms.ads.AdListener() {
+                        override fun onAdFailedToLoad(p0: Int) {
+                            super.onAdFailedToLoad(p0)
+                            Log.e("Trait: Ad", "Google: $p0")
+                            onBannerFailedToLoad?.invoke()
+                        }
+                    }
+                }
+
                 container?.removeView(facebookAdView)
                 container?.addView(adMobAdView)
                 adMobAdView.loadAd(AdRequest.Builder().build())
