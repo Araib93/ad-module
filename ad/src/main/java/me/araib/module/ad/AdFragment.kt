@@ -57,8 +57,8 @@ class AdFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_ad, container, false) as FrameLayout
     }
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
+    override fun onStart() {
+        super.onStart()
         if (::facebookAdView.isInitialized && ::adMobAdView.isInitialized)
             return
 
