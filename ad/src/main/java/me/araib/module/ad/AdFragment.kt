@@ -35,7 +35,7 @@ class AdFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_ad, parent, false)
         val container = view.findViewById<FrameLayout?>(R.id.container)
-        com.facebook.ads.AdView(
+        facebookAdView = com.facebook.ads.AdView(
             view.context,
             facebookAdId,
             com.facebook.ads.AdSize.BANNER_HEIGHT_50
