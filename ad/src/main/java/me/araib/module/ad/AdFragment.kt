@@ -1,6 +1,5 @@
 package me.araib.module.ad
 
-import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -47,15 +46,18 @@ class AdFragment : Fragment() {
 
         facebookAdView.setAdListener(object : AdListener {
             override fun onAdClicked(p0: Ad?) {
+                Log.i(TAG, "AdMob: Ad clicked")
                 // Implementation not required
             }
 
             override fun onError(p0: Ad?, p1: AdError?) {
+                Log.e(TAG, "Facebook: ${p1?.errorMessage ?: "AdError is null"}")
+
                 if (context == null) {
-                    Log.d(TAG, "onError:Context Null")
+                    Log.d(TAG, "AdMob: context is null")
                     return
                 }
-                Log.e(TAG, "Facebook: ${p1?.errorMessage ?: "AdError is null"}")
+
                 adMobAdView = com.google.android.gms.ads.AdView(context).apply {
                     adSize = AdSize.BANNER
                     adUnitId = adMobAdId
@@ -73,14 +75,17 @@ class AdFragment : Fragment() {
                     }
                 }
 
-                view?.removeView(facebookAdView)
-                view?.addView(adMobAdView)
-                Log.e(TAG, "onCreate: container is null while loading AdMob ad")
+                if (view == null)
+                    Log.e(TAG, "AdMob: view is null")
+                else {
+                    view.removeView(facebookAdView)
+                    view.addView(adMobAdView)
+                }
                 adMobAdView.loadAd(AdRequest.Builder().build())
             }
 
             override fun onAdLoaded(p0: Ad?) {
-                Log.i("Trait: Ad", "Facebook: Ad loaded")
+                Log.i(TAG, "Facebook: Ad loaded")
                 // Implementation not required
             }
 
@@ -89,20 +94,13 @@ class AdFragment : Fragment() {
             }
         })
 
-        view?.addView(facebookAdView)
-        Log.e(TAG, "onCreate: container is null while loading Facebook ad")
+        if (view == null)
+            Log.e(TAG, "Facebook: view is null")
+        else {
+            view.addView(facebookAdView)
+        }
         facebookAdView.loadAd()
 
         return view
-    }
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        Log.d(TAG, "onAttach:Called")
-    }
-
-    override fun onDetach() {
-        super.onDetach()
-        Log.d(TAG, "onDetach:Called")
     }
 }
