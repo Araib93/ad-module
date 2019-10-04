@@ -14,6 +14,10 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 
 class AdFragment : Fragment() {
+    companion object {
+        private val TAG: String? = "Trait: Ad"
+    }
+
     private val facebookAdId by lazy {
         arguments?.getBundle("data")?.getString("facebookAdId")
             ?: throw IllegalArgumentException("Facebook ad id not found")
@@ -34,7 +38,7 @@ class AdFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_ad, parent, false)
-        val container = view.findViewById<FrameLayout?>(R.id.container)
+        val container = view.findViewById<FrameLayout?>(R.id.fl_container)
         facebookAdView = com.facebook.ads.AdView(
             view.context,
             facebookAdId,
@@ -47,25 +51,32 @@ class AdFragment : Fragment() {
             }
 
             override fun onError(p0: Ad?, p1: AdError?) {
-                Log.e("Trait: Ad", "Facebook: ${p1?.errorMessage ?: "AdError is null"}")
+                Log.e(TAG, "Facebook: ${p1?.errorMessage ?: "AdError is null"}")
                 adMobAdView = com.google.android.gms.ads.AdView(view.context).apply {
                     adSize = AdSize.BANNER
                     adUnitId = adMobAdId
                     adListener = object : com.google.android.gms.ads.AdListener() {
                         override fun onAdFailedToLoad(p0: Int) {
                             super.onAdFailedToLoad(p0)
-                            Log.e("Trait: Ad", "Google: $p0")
+                            Log.e(TAG, "AdMob: $p0")
                             onBannerFailedToLoad?.invoke()
+                        }
+
+                        override fun onAdLoaded() {
+                            super.onAdLoaded()
+                            Log.i(TAG, "AdMob: Ad loaded")
                         }
                     }
                 }
 
                 container?.removeView(facebookAdView)
                 container?.addView(adMobAdView)
+                Log.e(TAG, "onCreate: container is null while loading AdMob ad")
                 adMobAdView.loadAd(AdRequest.Builder().build())
             }
 
             override fun onAdLoaded(p0: Ad?) {
+                Log.i("Trait: Ad", "Facebook: Ad loaded")
                 // Implementation not required
             }
 
@@ -75,6 +86,7 @@ class AdFragment : Fragment() {
         })
 
         container?.addView(facebookAdView)
+        Log.e(TAG, "onCreate: container is null while loading Facebook ad")
         facebookAdView.loadAd()
 
         return view
