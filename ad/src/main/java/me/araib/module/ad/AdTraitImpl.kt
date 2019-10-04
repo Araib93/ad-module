@@ -3,6 +3,7 @@ package me.araib.module.ad
 import android.content.Context
 import android.util.Log
 import androidx.annotation.IdRes
+import androidx.core.os.bundleOf
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
@@ -95,7 +96,16 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
             AudienceNetworkAds.initialize(context.applicationContext)
             MobileAds.initialize(context.applicationContext, adMobAdId)
 
-            adFragment = AdFragment.getInstance(facebookAdId, adMobAdId, onBannerFailedToLoad)
+            adFragment = AdFragment().apply {
+                this.arguments = bundleOf(
+                    "data" to bundleOf(
+                        "facebookAdId" to facebookAdId,
+                        "adMobAdId" to adMobAdId
+                    )
+                )
+                this.onBannerFailedToLoad = onBannerFailedToLoad
+            }
+
             fragmentManager
                 .beginTransaction()
                 .replace(replaceLayout, adFragment)
