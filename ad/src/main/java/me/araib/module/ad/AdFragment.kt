@@ -52,7 +52,7 @@ class AdFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_ad, parent, false)
-        val container = view.findViewById<FrameLayout>(R.id.container)
+        val container = view.findViewById<FrameLayout?>(R.id.container)
 
         facebookAdView.setAdListener(object : AdListener {
             override fun onAdClicked(p0: Ad?) {
@@ -61,8 +61,8 @@ class AdFragment : Fragment() {
 
             override fun onError(p0: Ad?, p1: AdError?) {
                 Log.e("Trait: Ad", "Facebook: ${p1?.errorMessage ?: "AdError is null"}")
-                container.removeView(facebookAdView)
-                container.addView(adMobAdView)
+                container?.removeView(facebookAdView)
+                container?.addView(adMobAdView)
                 adMobAdView.loadAd(AdRequest.Builder().build())
             }
 
@@ -75,7 +75,7 @@ class AdFragment : Fragment() {
             }
         })
 
-        container.addView(facebookAdView)
+        container?.addView(facebookAdView)
         facebookAdView.loadAd()
 
         return view
