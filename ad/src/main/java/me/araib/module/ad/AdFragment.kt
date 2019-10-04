@@ -14,7 +14,9 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 
 class AdFragment : Fragment() {
-    private val TAG: String? = "Trait: Ad"
+    companion object {
+        private val TAG: String? = "Trait: Ad"
+    }
 
     private val facebookAdId by lazy {
         arguments?.getBundle("data")?.getString("facebookAdId")
