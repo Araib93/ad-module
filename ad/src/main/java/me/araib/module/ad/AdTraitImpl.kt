@@ -51,7 +51,6 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
         val adMobInterstitialAd = com.google.android.gms.ads.InterstitialAd(context)
         adMobInterstitialAd.adUnitId = adMobAdId
         adMobInterstitialAd.loadAd(AdRequest.Builder().build())
-        Log.e(TAG, "loadInterstitialAd called")
     }
 
     override fun showInterstitialAd(
@@ -59,8 +58,8 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
         adMobAdId: String,
         onAdDismiss: (() -> Unit)?
     ) {
-        if (!::facebookInterstitialAd.isInitialized || !::adMobInterstitialAd.isInitialized) {
-            throw IllegalStateException("showInterstitialAd called before loadInterstitialAd call")
+        check(::facebookInterstitialAd.isInitialized && ::adMobInterstitialAd.isInitialized) {
+            "loadInterstitialAd() not called before showInterstitialAd()"
         }
 
         when {
@@ -70,8 +69,7 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
                         Log.i(TAG, "Facebook: Interstitial ad dismissed")
                         loadInterstitialAd(
                             facebookAdId = facebookAdId,
-                            adMobAdId = adMobAdId
-                        )
+                            adMobAdId = adMobAdId)
                         onAdDismiss?.invoke()
                     }
 
