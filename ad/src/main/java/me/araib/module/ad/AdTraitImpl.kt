@@ -103,6 +103,10 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
                     override fun onAdClosed() {
                         super.onAdClosed()
                         Log.i(TAG, "AdMob: Interstitial ad closed")
+                        loadInterstitialAd(
+                            facebookAdId = facebookAdId,
+                            adMobAdId = adMobAdId
+                        )
                         onAdDismiss?.invoke()
                     }
                 }
