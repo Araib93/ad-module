@@ -39,6 +39,17 @@ interface AdTrait {
         name = "adMobAdId",
         values = ["String -> Interstitial ad id for AdMob"]
     )
+    fun loadInterstitialAd(facebookAdId: String, adMobAdId: String)
+
+    @ExposedProvideFunction(purpose = "For showing interstitial ads from Facebook fallback AdMob, use after loadInterstitialAd")
+    @PossibleValues(
+        name = "facebookAdId",
+        values = ["String -> Interstitial ad id for Facebook"]
+    )
+    @PossibleValues(
+        name = "adMobAdId",
+        values = ["String -> Interstitial ad id for AdMob"]
+    )
     @PossibleValues(
         name = "onAdDismiss",
         values = [
@@ -46,10 +57,11 @@ interface AdTrait {
             "null -> Remove dismiss listener"
         ]
     )
-    fun loadInterstitialAd(facebookAdId: String, adMobAdId: String, onAdDismiss: (() -> Unit)?)
-
-    @ExposedProvideFunction(purpose = "For showing interstitial ads from Facebook fallback AdMob, use after loadInterstitialAd")
-    fun showInterstitialAd()
+    fun showInterstitialAd(
+        facebookAdId: String,
+        adMobAdId: String,
+        onAdDismiss: (() -> Unit)? = null
+    )
 
     @ExposedProvideFunction(purpose = "For showing banner ad on the given layout")
     @PossibleValues(
