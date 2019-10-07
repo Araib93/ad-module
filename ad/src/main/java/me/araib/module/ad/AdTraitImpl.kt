@@ -48,7 +48,7 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
         facebookInterstitialAd = com.facebook.ads.InterstitialAd(context, facebookAdId)
         facebookInterstitialAd.loadAd()
 
-        val adMobInterstitialAd = com.google.android.gms.ads.InterstitialAd(context)
+        adMobInterstitialAd = com.google.android.gms.ads.InterstitialAd(context)
         adMobInterstitialAd.adUnitId = adMobAdId
         adMobInterstitialAd.loadAd(AdRequest.Builder().build())
     }
@@ -69,7 +69,8 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
                         Log.i(TAG, "Facebook: Interstitial ad dismissed")
                         loadInterstitialAd(
                             facebookAdId = facebookAdId,
-                            adMobAdId = adMobAdId)
+                            adMobAdId = adMobAdId
+                        )
                         onAdDismiss?.invoke()
                     }
 

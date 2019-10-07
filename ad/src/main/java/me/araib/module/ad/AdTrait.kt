@@ -57,6 +57,7 @@ interface AdTrait {
             "null -> Remove dismiss listener"
         ]
     )
+    @Throws(IllegalStateException::class)
     fun showInterstitialAd(
         facebookAdId: String,
         adMobAdId: String,
