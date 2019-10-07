@@ -10,7 +10,6 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
 import com.facebook.ads.Ad
-import com.facebook.ads.AdError
 import com.facebook.ads.AudienceNetworkAds
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
@@ -42,12 +41,19 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
         facebookAdId: String,
         adMobAdId: String
     ) {
+        loadFacebookInterstitialAd(facebookAdId)
+        loadAdMobInterstitialAd(adMobAdId)
+    }
+
+    private fun loadFacebookInterstitialAd(facebookAdId: String) {
         if (::facebookInterstitialAd.isInitialized) {
             facebookInterstitialAd.destroy()
         }
         facebookInterstitialAd = com.facebook.ads.InterstitialAd(context, facebookAdId)
         facebookInterstitialAd.loadAd()
+    }
 
+    private fun loadAdMobInterstitialAd(adMobAdId: String) {
         adMobInterstitialAd = com.google.android.gms.ads.InterstitialAd(context)
         adMobInterstitialAd.adUnitId = adMobAdId
         adMobInterstitialAd.loadAd(AdRequest.Builder().build())
@@ -67,50 +73,24 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
                 facebookInterstitialAd.setAdListener(object : FacebookInterstitialAdListener() {
                     override fun onInterstitialDismissed(p0: Ad?) {
                         Log.i(TAG, "Facebook: Interstitial ad dismissed")
-                        loadInterstitialAd(
-                            facebookAdId = facebookAdId,
-                            adMobAdId = adMobAdId
-                        )
+                        loadFacebookInterstitialAd(facebookAdId)
                         onAdDismiss?.invoke()
-                    }
-
-                    override fun onError(p0: Ad?, p1: AdError?) {
-                        Log.e(
-                            TAG,
-                            "Facebook: ${p1?.errorMessage
-                                ?: "Unable to load Facebook interstitial ad"} code: ${p1?.errorCode
-                                ?: "Unknown"}"
-                        )
-                        loadInterstitialAd(
-                            facebookAdId = facebookAdId,
-                            adMobAdId = adMobAdId
-                        )
                     }
                 })
                 facebookInterstitialAd.show()
+                loadFacebookInterstitialAd(facebookAdId)
             }
             adMobInterstitialAd.isLoaded -> {
                 adMobInterstitialAd.adListener = object : AdListener() {
-                    override fun onAdFailedToLoad(p0: Int) {
-                        super.onAdFailedToLoad(p0)
-                        Log.e(TAG, "AdMob: Unable to load AdMob interstitial ad code: $p0")
-                        loadInterstitialAd(
-                            facebookAdId = facebookAdId,
-                            adMobAdId = adMobAdId
-                        )
-                    }
-
                     override fun onAdClosed() {
                         super.onAdClosed()
                         Log.i(TAG, "AdMob: Interstitial ad closed")
-                        loadInterstitialAd(
-                            facebookAdId = facebookAdId,
-                            adMobAdId = adMobAdId
-                        )
+                        loadAdMobInterstitialAd(adMobAdId)
                         onAdDismiss?.invoke()
                     }
                 }
                 adMobInterstitialAd.show()
+                loadAdMobInterstitialAd(adMobAdId)
             }
             else -> Log.e(TAG, "showInterstitialAd() called but ads not loaded")
         }
