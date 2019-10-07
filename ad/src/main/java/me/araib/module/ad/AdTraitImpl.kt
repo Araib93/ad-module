@@ -57,12 +57,23 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
             }
 
             override fun onError(p0: Ad?, p1: AdError?) {
-                Log.e(TAG, "Facebook: ${p1?.errorMessage ?: "Unable to load Facebook interstitial ad"} code: ${p1?.errorCode?: "Unknown"}")
+                Log.e(TAG,
+                    "Facebook: ${p1?.errorMessage
+                        ?: "Unable to load Facebook interstitial ad"} code: ${p1?.errorCode
+                        ?: "Unknown"}"
+                )
                 val adMobInterstitialAd = com.google.android.gms.ads.InterstitialAd(context)
 
                 adMobInterstitialAd.adUnitId = adMobAdId
 
                 adMobInterstitialAd.adListener = object : AdListener() {
+                    override fun onAdLoaded() {
+                        Log.i(TAG, "AdMob: Interstitial ad loaded")
+                        super.onAdLoaded()
+                        if (adMobInterstitialAd.isLoaded)
+                            adMobInterstitialAd.show()
+                    }
+
                     override fun onAdFailedToLoad(p0: Int) {
                         super.onAdFailedToLoad(p0)
                         Log.e(TAG, "AdMob: Unable to load AdMob interstitial ad code: $p0")
@@ -80,6 +91,8 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
 
             override fun onAdLoaded(p0: Ad?) {
                 Log.i(TAG, "Facebook: Interstitial ad loaded")
+                if (facebookInterstitialAd.isAdLoaded)
+                    facebookInterstitialAd.show()
             }
 
             override fun onLoggingImpression(p0: Ad?) {
