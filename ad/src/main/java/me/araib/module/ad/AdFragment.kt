@@ -46,12 +46,12 @@ class AdFragment : Fragment() {
 
         facebookAdView.setAdListener(object : AdListener {
             override fun onAdClicked(p0: Ad?) {
-                Log.i(TAG, "AdMob: Ad clicked")
+                Log.i(TAG, "AdMob: Banner ad clicked")
                 // Implementation not required
             }
 
             override fun onError(p0: Ad?, p1: AdError?) {
-                Log.e(TAG, "Facebook: ${p1?.errorMessage ?: "AdError is null"}")
+                Log.e(TAG, "Facebook: ${p1?.errorMessage ?: "Unable to load Facebook banner ad"} code: ${p1?.errorCode?: "Unknown"}")
 
                 if (context == null) {
                     Log.d(TAG, "AdMob: context is null")
@@ -64,19 +64,19 @@ class AdFragment : Fragment() {
                     adListener = object : com.google.android.gms.ads.AdListener() {
                         override fun onAdFailedToLoad(p0: Int) {
                             super.onAdFailedToLoad(p0)
-                            Log.e(TAG, "AdMob: $p0")
+                            Log.e(TAG, "AdMob: Unable to load AdMob banner ad code: $p0")
                             onBannerFailedToLoad?.invoke()
                         }
 
                         override fun onAdLoaded() {
                             super.onAdLoaded()
-                            Log.i(TAG, "AdMob: Ad loaded")
+                            Log.i(TAG, "AdMob: Banner ad loaded")
                         }
                     }
                 }
 
                 if (view == null)
-                    Log.e(TAG, "AdMob: view is null")
+                    Log.e(TAG, "AdMob: Banner ad view is null")
                 else {
                     view.removeView(facebookAdView)
                     view.addView(adMobAdView)
@@ -85,7 +85,7 @@ class AdFragment : Fragment() {
             }
 
             override fun onAdLoaded(p0: Ad?) {
-                Log.i(TAG, "Facebook: Ad loaded")
+                Log.i(TAG, "Facebook: Banner ad loaded")
                 // Implementation not required
             }
 
@@ -95,7 +95,7 @@ class AdFragment : Fragment() {
         })
 
         if (view == null)
-            Log.e(TAG, "Facebook: view is null")
+            Log.e(TAG, "Facebook: Banner ad view is null")
         else {
             view.addView(facebookAdView)
         }

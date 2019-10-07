@@ -17,6 +17,10 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
 
 class AdTraitImpl : LifecycleObserver, AdTrait {
+    companion object {
+        private val TAG: String? = "Trait: Ad"
+    }
+
     private var context: Context? = null
     private lateinit var adFragment: AdFragment
 
@@ -40,18 +44,20 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
 
         facebookInterstitialAd.setAdListener(object : com.facebook.ads.InterstitialAdListener {
             override fun onInterstitialDisplayed(p0: Ad?) {
-                // Implementation not required
+                Log.i(TAG, "Facebook: Interstitial ad displayed")
             }
 
             override fun onAdClicked(p0: Ad?) {
-                // Implementation not required
+                Log.i(TAG, "Facebook: Interstitial ad clicked")
             }
 
             override fun onInterstitialDismissed(p0: Ad?) {
+                Log.i(TAG, "Facebook: Interstitial ad dismissed")
                 onAdDismiss?.invoke()
             }
 
             override fun onError(p0: Ad?, p1: AdError?) {
+                Log.e(TAG, "Facebook: ${p1?.errorMessage ?: "Unable to load Facebook interstitial ad"} code: ${p1?.errorCode?: "Unknown"}")
                 val adMobInterstitialAd = com.google.android.gms.ads.InterstitialAd(context)
 
                 adMobInterstitialAd.adUnitId = adMobAdId
@@ -59,11 +65,12 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
                 adMobInterstitialAd.adListener = object : AdListener() {
                     override fun onAdFailedToLoad(p0: Int) {
                         super.onAdFailedToLoad(p0)
-                        Log.e("Trait: Ad", "Unable to load ad")
+                        Log.e(TAG, "AdMob: Unable to load AdMob interstitial ad code: $p0")
                     }
 
                     override fun onAdClosed() {
                         super.onAdClosed()
+                        Log.i(TAG, "AdMob: Interstitial ad closed")
                         onAdDismiss?.invoke()
                     }
                 }
@@ -72,7 +79,7 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
             }
 
             override fun onAdLoaded(p0: Ad?) {
-                // Implementation not required
+                Log.i(TAG, "Facebook: Interstitial ad loaded")
             }
 
             override fun onLoggingImpression(p0: Ad?) {
