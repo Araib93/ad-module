@@ -30,7 +30,18 @@ interface AdTrait {
     )
     fun initAdTrait(context: Context)
 
-    @ExposedProvideFunction(purpose = "For showing interstitial ads from Facebook fallback AdMob")
+    @ExposedProvideFunction(purpose = "For loading interstitial ads from Facebook fallback AdMob")
+    @PossibleValues(
+        name = "facebookAdId",
+        values = ["String -> Interstitial ad id for Facebook"]
+    )
+    @PossibleValues(
+        name = "adMobAdId",
+        values = ["String -> Interstitial ad id for AdMob"]
+    )
+    fun loadInterstitialAd(facebookAdId: String, adMobAdId: String)
+
+    @ExposedProvideFunction(purpose = "For showing interstitial ads from Facebook fallback AdMob, use after loadInterstitialAd")
     @PossibleValues(
         name = "facebookAdId",
         values = ["String -> Interstitial ad id for Facebook"]
