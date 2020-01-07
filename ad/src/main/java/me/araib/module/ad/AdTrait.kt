@@ -32,23 +32,22 @@ interface AdTrait {
 
     @ExposedProvideFunction(purpose = "For loading interstitial ads from Facebook fallback AdMob")
     @PossibleValues(
-        name = "facebookAdId",
-        values = ["String -> Interstitial ad id for Facebook"]
+        name = "policies",
+        values = ["AdPolicy -> Ad policy which defines the priority to load ads"]
     )
-    @PossibleValues(
-        name = "adMobAdId",
-        values = ["String -> Interstitial ad id for AdMob"]
-    )
-    fun loadInterstitialAd(facebookAdId: String, adMobAdId: String)
+    fun loadInterstitialAd(vararg policies: AdPolicy)
 
     @ExposedProvideFunction(purpose = "For showing interstitial ads from Facebook fallback AdMob, use after loadInterstitialAd")
     @PossibleValues(
-        name = "facebookAdId",
-        values = ["String -> Interstitial ad id for Facebook"]
+        name = "policies",
+        values = ["AdPolicy -> Ad policy which defines the priority to load ads"]
     )
     @PossibleValues(
-        name = "adMobAdId",
-        values = ["String -> Interstitial ad id for AdMob"]
+        name = "onInterstitialFailedToLoad",
+        values = [
+            "():Unit -> Interstitial failed to load listener for modifying UI since no interstitial is present",
+            "null -> Remove interstitial failed to load listener"
+        ]
     )
     @PossibleValues(
         name = "onAdDismiss",
@@ -59,9 +58,9 @@ interface AdTrait {
     )
     @Throws(IllegalStateException::class)
     fun showInterstitialAd(
-        facebookAdId: String,
-        adMobAdId: String,
-        onAdDismiss: (() -> Unit)? = null
+        vararg policies: AdPolicy,
+        onAdDismiss: (() -> Unit)? = null,
+        onInterstitialFailedToLoad: (() -> Unit)? = null
     )
 
     @ExposedProvideFunction(purpose = "For showing banner ad on the given layout")
@@ -74,16 +73,8 @@ interface AdTrait {
         values = ["Int -> R.id of the layout which is to be replaced by banner ad"]
     )
     @PossibleValues(
-        name = "facebookAdId",
-        values = ["String -> Banner ad id for Facebook"]
-    )
-    @PossibleValues(
-        name = "adMobAdId",
-        values = ["String -> Banner ad id for AdMob"]
-    )
-    @PossibleValues(
-        name = "adMobAppId",
-        values = ["String -> App id for AdMob"]
+        name = "policy",
+        values = ["AdPolicy -> Ad policy which defines the priority to load ads"]
     )
     @PossibleValues(
         name = "onBannerFailedToLoad",
@@ -95,9 +86,7 @@ interface AdTrait {
     fun showBannerAd(
         fragmentManager: FragmentManager,
         @IdRes replaceLayout: Int,
-        facebookAdId: String,
-        adMobAdId: String,
-        adMobAppId: String,
+        policy: AdPolicy,
         onBannerFailedToLoad: (() -> Unit)? = null
     )
 

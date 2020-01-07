@@ -10,10 +10,14 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
 import com.facebook.ads.Ad
+import com.facebook.ads.AdError
 import com.facebook.ads.AudienceNetworkAds
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
+import me.araib.module.ad.banners.BannerAdFragment
+import me.araib.module.ad.banners.AdmobBannerAdFragment
+import me.araib.module.ad.banners.FacebookBannerAdFragment
 
 class AdTraitImpl : LifecycleObserver, AdTrait {
     companion object {
@@ -21,7 +25,7 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
     }
 
     private var context: Context? = null
-    private lateinit var adFragment: AdFragment
+    private lateinit var bannerAdFragment: BannerAdFragment
 
     override fun initAdTrait(context: Context) {
         this.context = context
@@ -37,12 +41,20 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
     private lateinit var facebookInterstitialAd: com.facebook.ads.InterstitialAd
     private lateinit var adMobInterstitialAd: com.google.android.gms.ads.InterstitialAd
 
-    override fun loadInterstitialAd(
-        facebookAdId: String,
-        adMobAdId: String
-    ) {
-        loadFacebookInterstitialAd(facebookAdId)
-        loadAdMobInterstitialAd(adMobAdId)
+    override fun loadInterstitialAd(vararg policies: AdPolicy) {
+        for(policy in policies) {
+            when (policy.type) {
+                Type.FACEBOOK -> {
+                    loadFacebookInterstitialAd(policy.adId)
+                }
+                Type.ADMOB -> {
+                    loadAdMobInterstitialAd(policy.adId)
+                }
+                Type.MOPUB -> {
+                    throw IllegalArgumentException("MoPub support is currently in progress")
+                }
+            }
+        }
     }
 
     private fun loadFacebookInterstitialAd(facebookAdId: String) {
@@ -59,77 +71,107 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
         adMobInterstitialAd.loadAd(AdRequest.Builder().build())
     }
 
-    override fun showInterstitialAd(
-        facebookAdId: String,
-        adMobAdId: String,
-        onAdDismiss: (() -> Unit)?
-    ) {
-        check(::facebookInterstitialAd.isInitialized && ::adMobInterstitialAd.isInitialized) {
-            "loadInterstitialAd() not called before showInterstitialAd()"
-        }
-
-        when {
-            facebookInterstitialAd.isAdLoaded -> {
-                facebookInterstitialAd.setAdListener(object : FacebookInterstitialAdListener() {
-                    override fun onInterstitialDismissed(p0: Ad?) {
-                        Log.i(TAG, "Facebook: Interstitial ad dismissed")
-                        loadFacebookInterstitialAd(facebookAdId)
-                        onAdDismiss?.invoke()
+    override fun showInterstitialAd(vararg policies: AdPolicy, onAdDismiss: (() -> Unit)?, onInterstitialFailedToLoad: (() -> Unit)?) {
+        for (policy in policies) {
+            when (policy.type) {
+                Type.FACEBOOK -> {
+                    check(::facebookInterstitialAd.isInitialized) {
+                        "loadInterstitialAd() not called before showInterstitialAd()"
                     }
-                })
-                facebookInterstitialAd.show()
-                loadFacebookInterstitialAd(facebookAdId)
-            }
-            adMobInterstitialAd.isLoaded -> {
-                adMobInterstitialAd.adListener = object : AdListener() {
-                    override fun onAdClosed() {
-                        super.onAdClosed()
-                        Log.i(TAG, "AdMob: Interstitial ad closed")
-                        loadAdMobInterstitialAd(adMobAdId)
-                        onAdDismiss?.invoke()
+                    if(facebookInterstitialAd.isAdLoaded){
+                        facebookInterstitialAd.setAdListener(object : FacebookInterstitialAdListener() {
+                            override fun onInterstitialDismissed(p0: Ad?) {
+                                Log.i(TAG, "Facebook: Interstitial ad dismissed")
+                                loadFacebookInterstitialAd(policy.adId)
+                                onAdDismiss?.invoke()
+                            }
+
+                            override fun onError(p0: Ad?, p1: AdError?) {
+                                Log.e(TAG, "Facebook: ${p1?.errorMessage ?: "Unable to load Facebook banner ad"} code: ${p1?.errorCode?: "Unknown"}")
+                                onInterstitialFailedToLoad?.invoke()
+                                super.onError(p0, p1)
+                            }
+                        })
+                        facebookInterstitialAd.show()
+                        loadFacebookInterstitialAd(policy.adId)
                     }
                 }
-                adMobInterstitialAd.show()
-                loadAdMobInterstitialAd(adMobAdId)
+                Type.ADMOB -> {
+                    check(::adMobInterstitialAd.isInitialized) {
+                        "loadInterstitialAd() not called before showInterstitialAd()"
+                    }
+                     if(adMobInterstitialAd.isLoaded) {
+                        adMobInterstitialAd.adListener = object : AdListener() {
+                            override fun onAdClosed() {
+                                super.onAdClosed()
+                                Log.i(TAG, "AdMob: Interstitial ad closed")
+                                loadAdMobInterstitialAd(policy.adId)
+                                onAdDismiss?.invoke()
+                            }
+
+                            override fun onAdFailedToLoad(p0: Int) {
+                                Log.e(TAG, "AdMob: Unable to load AdMob banner ad code: $p0")
+                                onInterstitialFailedToLoad?.invoke()
+                                super.onAdFailedToLoad(p0)
+                            }
+                        }
+                        adMobInterstitialAd.show()
+                        loadAdMobInterstitialAd(policy.adId)
+                    }
+                }
+                Type.MOPUB -> {
+                    throw IllegalArgumentException("MoPub support is currently in progress")
+                }
             }
-            else -> Log.e(TAG, "showInterstitialAd() called but ads not loaded")
         }
     }
 
     override fun showBannerAd(
-        fragmentManager: FragmentManager,
-        @IdRes replaceLayout: Int,
-        facebookAdId: String,
-        adMobAdId: String,
-        adMobAppId: String,
+        fragmentManager: FragmentManager, @IdRes replaceLayout: Int,
+        policy: AdPolicy,
         onBannerFailedToLoad: (() -> Unit)?
     ) {
         context?.let { context ->
-            AudienceNetworkAds.initialize(context.applicationContext)
-            MobileAds.initialize(context.applicationContext, adMobAdId)
-
-            adFragment = AdFragment().apply {
-                this.arguments = bundleOf(
-                    "data" to bundleOf(
-                        "facebookAdId" to facebookAdId,
-                        "adMobAdId" to adMobAdId
-                    )
-                )
-                this.onBannerFailedToLoad = onBannerFailedToLoad
+                when(policy.type) {
+                    Type.FACEBOOK -> {
+                        AudienceNetworkAds.initialize(context.applicationContext)
+                        bannerAdFragment = FacebookBannerAdFragment().apply {
+                            this.arguments = bundleOf(
+                                "data" to bundleOf(
+                                    "facebookAdId" to facebookAdId
+                                )
+                            )
+                            this.onBannerFailedToLoad = onBannerFailedToLoad
+                        }
+                    }
+                    Type.ADMOB -> {
+                        MobileAds.initialize(context.applicationContext, policy.adId)
+                        bannerAdFragment = AdmobBannerAdFragment().apply {
+                            this.arguments = bundleOf(
+                                "data" to bundleOf(
+                                    "adMobAdId" to adMobAdId
+                                )
+                            )
+                            this.onBannerFailedToLoad = onBannerFailedToLoad
+                        }
+                    }
+                    Type.MOPUB -> {
+                        throw IllegalArgumentException("MoPub support is currently in progress")
+                    }
             }
 
             fragmentManager
                 .beginTransaction()
-                .replace(replaceLayout, adFragment)
+                .replace(replaceLayout, bannerAdFragment)
                 .commit()
         }
     }
 
     override fun removeBannerAd(fragmentManager: FragmentManager): Boolean {
-        if (::adFragment.isInitialized && adFragment.isAdded) {
+        if (::bannerAdFragment.isInitialized && bannerAdFragment.isAdded) {
             fragmentManager
                 .beginTransaction()
-                .remove(adFragment)
+                .remove(bannerAdFragment)
                 .commit()
             return true
         }
