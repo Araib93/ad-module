@@ -138,18 +138,18 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
                         bannerAdFragment = FacebookBannerAdFragment().apply {
                             this.arguments = bundleOf(
                                 "data" to bundleOf(
-                                    "facebookAdId" to facebookAdId
+                                    "facebookAdId" to policy.adId
                                 )
                             )
                             this.onBannerFailedToLoad = onBannerFailedToLoad
                         }
                     }
                     Type.ADMOB -> {
-                        MobileAds.initialize(context.applicationContext, policy.adId)
+                        MobileAds.initialize(context.applicationContext, policy.appId)
                         bannerAdFragment = AdmobBannerAdFragment().apply {
                             this.arguments = bundleOf(
                                 "data" to bundleOf(
-                                    "adMobAdId" to adMobAdId
+                                    "adMobAdId" to policy.adId
                                 )
                             )
                             this.onBannerFailedToLoad = onBannerFailedToLoad
