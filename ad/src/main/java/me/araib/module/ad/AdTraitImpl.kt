@@ -94,6 +94,8 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
                         })
                         facebookInterstitialAd.show()
                         loadFacebookInterstitialAd(policy.adId)
+                    } else {
+                        Log.e(TAG, "Facebook: Interstitial ad not loaded yet")
                     }
                 }
                 Type.ADMOB -> {
@@ -117,6 +119,8 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
                         }
                         adMobInterstitialAd.show()
                         loadAdMobInterstitialAd(policy.adId)
+                    } else {
+                         Log.e(TAG, "AdMob: Interstitial ad not loaded yet")
                     }
                 }
                 Type.MOPUB -> {
