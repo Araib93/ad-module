@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
@@ -23,8 +24,11 @@ class AdmobBannerAdFragment : BannerAdFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view  = inflater.inflate(R.layout.fragment_admob_banner_ad, container,  false) as AdView
-        view.apply {
+        val view = inflater.inflate(R.layout.fragment_admob_banner_ad, container, false) as FrameLayout?
+
+        val admobAdView = AdView(context)
+
+        admobAdView.apply {
             adSize = AdSize.BANNER
             adUnitId = adMobAdId
             adListener = object : com.google.android.gms.ads.AdListener() {
@@ -40,7 +44,14 @@ class AdmobBannerAdFragment : BannerAdFragment() {
                 }
             }
         }
-        view.loadAd(AdRequest.Builder().build())
+
+        if (view == null)
+            Log.e(TAG, "AdMob: Banner ad view is null")
+        else {
+            view.addView(admobAdView)
+        }
+        admobAdView.loadAd(AdRequest.Builder().build())
+
         return view
     }
 }
