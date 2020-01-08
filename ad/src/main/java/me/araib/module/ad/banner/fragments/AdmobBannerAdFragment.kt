@@ -1,4 +1,4 @@
-package me.araib.module.ad.banners
+package me.araib.module.ad.banner.fragments
 
 import android.os.Bundle
 import android.util.Log
@@ -17,15 +17,10 @@ class AdmobBannerAdFragment : BannerAdFragment() {
             ?: throw IllegalArgumentException("AdMob ad id not found")
     }
 
-    var onBannerFailedToLoad: (() -> Unit)? = null
+    var onBannerAdFailedToLoad: (() -> Unit)? = null
+    var onBannerAdLoaded: (() -> Unit)? = null
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_admob_banner_ad, container, false) as FrameLayout?
-
+    override fun loadBannerAd(view: ViewGroup?) {
         val admobAdView = AdView(context)
 
         admobAdView.apply {
@@ -35,23 +30,33 @@ class AdmobBannerAdFragment : BannerAdFragment() {
                 override fun onAdFailedToLoad(p0: Int) {
                     super.onAdFailedToLoad(p0)
                     Log.e(TAG, "AdMob: Unable to load AdMob banner ad code: $p0")
-                    onBannerFailedToLoad?.invoke()
+                    onBannerAdFailedToLoad?.invoke()
                 }
 
                 override fun onAdLoaded() {
                     super.onAdLoaded()
                     Log.i(TAG, "AdMob: Banner ad loaded")
+                    onBannerAdLoaded?.invoke()
                 }
             }
         }
 
-        if (view == null)
+        view?.addView(admobAdView) ?: run {
             Log.e(TAG, "AdMob: Banner ad view is null")
-        else {
-            view.addView(admobAdView)
+            onBannerAdFailedToLoad?.invoke()
         }
-        admobAdView.loadAd(AdRequest.Builder().build())
 
+        admobAdView.loadAd(AdRequest.Builder().build())
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        val view =
+            inflater.inflate(R.layout.fragment_admob_banner_ad, container, false) as FrameLayout?
+        loadBannerAd(view)
         return view
     }
 }

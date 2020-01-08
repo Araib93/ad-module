@@ -1,4 +1,4 @@
-package me.araib.module.ad
+package me.araib.module.ad.interstitial
 
 import com.facebook.ads.Ad
 import com.facebook.ads.AdError

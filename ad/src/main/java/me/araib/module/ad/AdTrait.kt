@@ -7,6 +7,9 @@ import me.araib.core.utils.ExposedClass
 import me.araib.core.utils.ExposedImplementFunction
 import me.araib.core.utils.ExposedProvideFunction
 import me.araib.core.utils.PossibleValues
+import me.araib.module.ad.banner.BannerAdPolicy
+import me.araib.module.ad.interstitial.InterstitialAdPolicy
+import me.araib.module.ad.rewarded.RewardedAdPolicy
 
 @ExposedClass(
     author = "m.araib.shafiq@gmail.com",
@@ -30,40 +33,37 @@ interface AdTrait {
     )
     fun initAdTrait(context: Context)
 
-    @ExposedProvideFunction(purpose = "For loading interstitial ads from Facebook fallback AdMob")
+    @ExposedProvideFunction(purpose = "For loading interstitial ad according to provided InterstitialAdPolicy object")
     @PossibleValues(
-        name = "policies",
-        values = ["AdPolicy -> Ad policy which defines the priority to load ads"]
+        name = "interstitialAdPolicy",
+        values = ["InterstitialAdPolicy -> Ad policy which defines which interstitial ad to load"]
     )
-    fun loadInterstitialAd(vararg policies: AdPolicy)
+    fun loadInterstitialAd(interstitialAdPolicy: InterstitialAdPolicy)
 
-    @ExposedProvideFunction(purpose = "For showing interstitial ads from Facebook fallback AdMob, use after loadInterstitialAd")
+    @ExposedProvideFunction(purpose = "For showing interstitial ads according to provided InterstitialAdPolicy object")
     @PossibleValues(
-        name = "policies",
-        values = ["AdPolicy -> Ad policy which defines the priority to load ads"]
-    )
-    @PossibleValues(
-        name = "onInterstitialFailedToLoad",
-        values = [
-            "():Unit -> Interstitial failed to load listener for modifying UI since no interstitial is present",
-            "null -> Remove interstitial failed to load listener"
-        ]
-    )
-    @PossibleValues(
-        name = "onAdDismiss",
-        values = [
-            "():Unit -> Dismiss listener for interstitial ad",
-            "null -> Remove dismiss listener"
-        ]
+        name = "interstitialAdPolicy",
+        values = ["InterstitialAdPolicy -> Ad policy which defines which interstitial ad to show"]
     )
     @Throws(IllegalStateException::class)
-    fun showInterstitialAd(
-        vararg policies: AdPolicy,
-        onAdDismiss: (() -> Unit)? = null,
-        onInterstitialFailedToLoad: (() -> Unit)? = null
-    )
+    fun showInterstitialAd(interstitialAdPolicy: InterstitialAdPolicy)
 
-    @ExposedProvideFunction(purpose = "For showing banner ad on the given layout")
+    @ExposedProvideFunction(purpose = "For loading rewarded ads according to provided Policy objects")
+    @PossibleValues(
+        name = "rewardedAdPolicy",
+        values = ["RewardedAdPolicy -> Ad policy which defines which rewarded ad to load"]
+    )
+    fun loadRewardedAd(rewardedAdPolicy: RewardedAdPolicy)
+
+    @ExposedProvideFunction(purpose = "For showing interstitial ads according to provided Policy objects")
+    @PossibleValues(
+        name = "rewardedAdPolicy",
+        values = ["RewardedAdPolicy -> Ad policy which defines which rewarded ad to show"]
+    )
+    @Throws(IllegalStateException::class)
+    fun showRewardedAd(rewardedAdPolicy: RewardedAdPolicy)
+
+    @ExposedProvideFunction(purpose = "For showing banner ad on the given layout. Please call removeAd() before showing a new one")
     @PossibleValues(
         name = "fragmentManager",
         values = ["FragmentManager -> SupportFragmentManager or ChildFragmentManager used for transaction of ad fragment"]
@@ -74,20 +74,12 @@ interface AdTrait {
     )
     @PossibleValues(
         name = "policy",
-        values = ["AdPolicy -> Ad policy which defines the priority to load ads"]
-    )
-    @PossibleValues(
-        name = "onBannerFailedToLoad",
-        values = [
-            "():Unit -> Banner failed to load listener for modifying UI since no banner is present",
-            "null -> Remove banner failed to load listener"
-        ]
+        values = ["BannerAdPolicy -> Ad policy which defines which banner ad to show"]
     )
     fun showBannerAd(
         fragmentManager: FragmentManager,
         @IdRes replaceLayout: Int,
-        policy: AdPolicy,
-        onBannerFailedToLoad: (() -> Unit)? = null
+        bannerAdPolicy: BannerAdPolicy
     )
 
     @ExposedProvideFunction(
