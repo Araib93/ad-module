@@ -68,40 +68,47 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
     }
 
     private fun loadFacebookInterstitialAd(interstitialAdPolicy: InterstitialAdPolicy.InterstitialFacebookPolicy) {
-        if (::facebookInterstitialAd.isInitialized) {
-            facebookInterstitialAd.destroy()
+        context?.let { context ->
+            FacebookAudienceNetworkAds.initialize(context.applicationContext)
+            if (::facebookInterstitialAd.isInitialized) {
+                facebookInterstitialAd.destroy()
+            }
+            facebookInterstitialAd = FacebookInterstitialAd(context, interstitialAdPolicy.facebookAdId)
+
+            facebookInterstitialAd.setAdListener(object : FacebookInterstitialAdListener() {
+                override fun onAdLoaded(p0: FacebookAd?) {
+                    super.onAdLoaded(p0)
+                    if (interstitialAdPolicy.debug)
+                        Log.i(TAG, "Facebook: Interstitial ad loaded")
+                    interstitialAdPolicy.facebookCallback?.onInterstitialAdLoaded?.invoke()
+                }
+
+                override fun onInterstitialDismissed(p0: FacebookAd?) {
+                    super.onInterstitialDismissed(p0)
+                    if (interstitialAdPolicy.debug)
+                        Log.i(TAG, "Facebook: Interstitial ad dismissed")
+                    interstitialAdPolicy.facebookCallback?.onInterstitialAdDismissed?.invoke()
+                    loadFacebookInterstitialAd(interstitialAdPolicy)
+                }
+
+                override fun onError(p0: FacebookAd?, p1: FacebookAdError?) {
+                    super.onError(p0, p1)
+                    if (interstitialAdPolicy.debug)
+                        Log.e(
+                            TAG,
+                            "Facebook: ${p1?.errorMessage
+                                ?: "Unable to load Facebook banner ad"} code: ${p1?.errorCode
+                                ?: "Unknown"}"
+                        )
+                    interstitialAdPolicy.facebookCallback?.onInterstitialAdError?.invoke()
+                }
+            })
+            facebookInterstitialAd.loadAd()
+        } ?: run {
+            if (interstitialAdPolicy.debug)
+                Log.e(TAG, "Facebook: Interstitial ad failed to load, Context is null")
+            interstitialAdPolicy.facebookCallback?.onInterstitialAdError?.invoke()
         }
-        facebookInterstitialAd = FacebookInterstitialAd(context, interstitialAdPolicy.facebookAdId)
-
-        facebookInterstitialAd.setAdListener(object : FacebookInterstitialAdListener() {
-            override fun onAdLoaded(p0: FacebookAd?) {
-                super.onAdLoaded(p0)
-                if (interstitialAdPolicy.debug)
-                    Log.i(TAG, "Facebook: Interstitial ad loaded")
-                interstitialAdPolicy.facebookCallback?.onInterstitialAdLoaded?.invoke()
-            }
-
-            override fun onInterstitialDismissed(p0: FacebookAd?) {
-                super.onInterstitialDismissed(p0)
-                if (interstitialAdPolicy.debug)
-                    Log.i(TAG, "Facebook: Interstitial ad dismissed")
-                interstitialAdPolicy.facebookCallback?.onInterstitialAdDismissed?.invoke()
-                loadFacebookInterstitialAd(interstitialAdPolicy)
-            }
-
-            override fun onError(p0: FacebookAd?, p1: FacebookAdError?) {
-                super.onError(p0, p1)
-                if (interstitialAdPolicy.debug)
-                    Log.e(
-                        TAG,
-                        "Facebook: ${p1?.errorMessage
-                            ?: "Unable to load Facebook banner ad"} code: ${p1?.errorCode
-                            ?: "Unknown"}"
-                    )
-                interstitialAdPolicy.facebookCallback?.onInterstitialAdError?.invoke()
-            }
-        })
-        facebookInterstitialAd.loadAd()
     }
 
     private fun loadAdmobInterstitialAd(interstitialAdPolicy: InterstitialAdPolicy.InterstitialAdmobPolicy) {
@@ -122,8 +129,8 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
                     super.onAdClosed()
                     if (interstitialAdPolicy.debug)
                         Log.i(TAG, "Admob: Interstitial ad closed")
-                    loadAdmobInterstitialAd(interstitialAdPolicy)
                     interstitialAdPolicy.admobCallback?.onInterstitialAdClosed?.invoke()
+                    loadAdmobInterstitialAd(interstitialAdPolicy)
                 }
 
                 override fun onAdFailedToLoad(p0: Int) {
@@ -158,7 +165,7 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
 
     private fun showFacebookInterstitialAd(interstitialAdPolicy: InterstitialAdPolicy.InterstitialFacebookPolicy) {
         check(::facebookInterstitialAd.isInitialized) {
-            "loadInterstitialAd() not called before showInterstitialAd()"
+            "Facebook: loadInterstitialAd() not called before showInterstitialAd()"
         }
         if (facebookInterstitialAd.isAdLoaded) {
             facebookInterstitialAd.show()
@@ -172,7 +179,7 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
 
     private fun showAdmobInterstitialAd(interstitialAdPolicy: InterstitialAdPolicy.InterstitialAdmobPolicy) {
         check(::admobInterstitialAd.isInitialized) {
-            "loadInterstitialAd() not called before showInterstitialAd()"
+            "Admob: loadInterstitialAd() not called before showInterstitialAd()"
         }
         if (admobInterstitialAd.isLoaded) {
             admobInterstitialAd.show()
@@ -202,7 +209,7 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
 
     private fun loadAdmobRewardedAd(rewardedAdPolicy: RewardedAdPolicy.RewardedAdmobPolicy) {
         context?.let { context ->
-            AdmobMobileAds.initialize(context?.applicationContext, rewardedAdPolicy.admobAppId)
+            AdmobMobileAds.initialize(context.applicationContext, rewardedAdPolicy.admobAppId)
             admobRewardedAd = AdmobRewardedAd(context, rewardedAdPolicy.admobAdId)
             val rewardedAdLoadCallback = object : AdmobRewardedAdLoadCallback() {
                 override fun onRewardedAdLoaded() {
@@ -244,7 +251,7 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
 
     private fun showAdmobRewardedAd(rewardedAdPolicy: RewardedAdPolicy.RewardedAdmobPolicy) {
         check(::admobRewardedAd.isInitialized) {
-            "loadRewardedAd() not called before showRewardedAd()"
+            "Admob: loadRewardedAd() not called before showRewardedAd()"
         }
         if (admobRewardedAd.isLoaded) {
             val rewardedAdCallback = object : AdmobRewardedAdCallback() {
@@ -268,6 +275,7 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
                     if (rewardedAdPolicy.debug)
                         Log.i(TAG, "Admob: Rewarded ad closed")
                     rewardedAdPolicy.admobCallback?.onRewardedAdClosed?.invoke()
+                    loadAdmobRewardedAd(rewardedAdPolicy)
                 }
             }
             admobRewardedAd.show(context as? BaseActivity, rewardedAdCallback)
