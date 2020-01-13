@@ -6,13 +6,18 @@ sealed class BannerAdPolicy : Serializable {
     class BannerAdmobPolicy(
         val adMobAppId: String,
         val adMobAdId: String,
-        val adMobCallback: BannerAdCallback.BannerFacebookCallback? = null
+        val adMobCallback: BannerAdCallback.BannerAdmobCallback? = null,
+        val debug: Boolean = true
     ) : BannerAdPolicy(), Serializable
     class BannerFacebookPolicy(
         val facebookAdId: String,
-        val facebookCallback: BannerAdCallback.BannerFacebookCallback? = null
+        val facebookCallback: BannerAdCallback.BannerFacebookCallback? = null,
+        val debug: Boolean = true
     ) : BannerAdPolicy(), Serializable
     class BannerMopubPolicy(
-        val mopubCallback: BannerAdCallback.BannerMopubCallback? = null
+        val mopubAppId: String,
+        val mopubAdId: String,
+        val mopubCallback: BannerAdCallback.BannerMopubCallback? = null,
+        val debug: Boolean = true
     ) : BannerAdPolicy(), Serializable
 }

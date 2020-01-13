@@ -2,14 +2,17 @@ package me.araib.module.ad.banner
 
 sealed class BannerAdCallback {
     class BannerAdmobCallback(
-        val onBannerFailedToLoad: (() -> Unit)?
+        val onBannerAdFailedToLoad: (() -> Unit)?,
+        val onBannerAdLoaded: (() -> Unit)?
     ) : BannerAdCallback()
 
     class BannerFacebookCallback(
-        val onBannerFailedToLoad: (() -> Unit)?
+        val onBannerAdFailedToLoad: (() -> Unit)?,
+        val onBannerAdLoaded: (() -> Unit)?
     ) : BannerAdCallback()
 
     class BannerMopubCallback(
-        val onBannerFailedToLoad: (() -> Unit)?
+        val onBannerAdFailedToLoad: (() -> Unit)?,
+        val onBannerAdLoaded: (() -> Unit)?
     ) : BannerAdCallback()
 }

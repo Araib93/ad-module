@@ -5,16 +5,20 @@ import java.io.Serializable
 sealed class InterstitialAdPolicy() : Serializable {
     data class InterstitialAdmobPolicy(
         val admobAdId: String,
-        val admobCallback: InterstitialAdCallback.InterstitialAdmobCallback? = null
+        val admobCallback: InterstitialAdCallback.InterstitialAdmobCallback? = null,
+        var debug: Boolean = false
     ) : InterstitialAdPolicy(), Serializable
 
     data class InterstitialFacebookPolicy(
         val facebookAdId: String,
-        val facebookCallback: InterstitialAdCallback.InterstitialFacebookCallback? = null
+        val facebookCallback: InterstitialAdCallback.InterstitialFacebookCallback? = null,
+        var debug: Boolean = false
     ) : InterstitialAdPolicy(),
         Serializable
 
     data class InterstitialMopubPolicy(
-        val mopubCallback: InterstitialAdCallback.InterstitialMopubCallback? = null
+        val mopubAdId: String,
+        val mopubCallback: InterstitialAdCallback.InterstitialMopubCallback? = null,
+        var debug: Boolean = false
     ) : InterstitialAdPolicy(), Serializable
 }
