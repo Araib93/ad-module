@@ -169,7 +169,6 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
         }
         if (facebookInterstitialAd.isAdLoaded) {
             facebookInterstitialAd.show()
-            loadFacebookInterstitialAd(interstitialAdPolicy)
         } else {
             if (interstitialAdPolicy.debug)
                 Log.e(TAG, "Facebook: Interstitial ad not loaded yet")
@@ -183,7 +182,6 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
         }
         if (admobInterstitialAd.isLoaded) {
             admobInterstitialAd.show()
-            loadAdmobInterstitialAd(interstitialAdPolicy)
         } else {
             if (interstitialAdPolicy.debug)
                 Log.e(TAG, "Admob: Interstitial ad not loaded yet")
@@ -279,7 +277,6 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
                 }
             }
             admobRewardedAd.show(context as? BaseActivity, rewardedAdCallback)
-            loadAdmobRewardedAd(rewardedAdPolicy)
         } else {
             if (rewardedAdPolicy.debug)
                 Log.e(TAG, "Admob: Rewarded ad not loaded yet")
