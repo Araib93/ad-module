@@ -19,7 +19,7 @@ class AdmobBannerAdFragment : BannerAdFragment() {
     }
 
     internal var adMobCallback: BannerAdCallback.BannerAdmobCallback? = null
-    internal var debug = true
+    internal var debug = false
 
     override fun loadBannerAd(view: ViewGroup?) {
         val admobAdView = AdView(context)

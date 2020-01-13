@@ -21,7 +21,7 @@ class FacebookBannerAdFragment : BannerAdFragment() {
     }
 
     internal var facebookCallback: BannerAdCallback.BannerFacebookCallback? = null
-    internal var debug = true
+    internal var debug = false
 
     override fun loadBannerAd(view: ViewGroup?) {
         val facebookAdView = AdView(
