@@ -4,9 +4,9 @@ import java.io.Serializable
 
 sealed class BannerAdPolicy : Serializable {
     class BannerAdmobPolicy(
-        val adMobAppId: String,
-        val adMobAdId: String,
-        val adMobCallback: BannerAdCallback.BannerAdmobCallback? = null,
+        val admobAppId: String,
+        val admobAdId: String,
+        val admobCallback: BannerAdCallback.BannerAdmobCallback? = null,
         val debug: Boolean = false
     ) : BannerAdPolicy(), Serializable
     class BannerFacebookPolicy(

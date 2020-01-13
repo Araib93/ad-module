@@ -4,6 +4,7 @@ import java.io.Serializable
 
 sealed class InterstitialAdPolicy() : Serializable {
     data class InterstitialAdmobPolicy(
+        val admobAppId: String,
         val admobAdId: String,
         val admobCallback: InterstitialAdCallback.InterstitialAdmobCallback? = null,
         var debug: Boolean = false

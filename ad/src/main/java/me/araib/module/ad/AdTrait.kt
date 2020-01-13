@@ -13,7 +13,7 @@ import me.araib.module.ad.rewarded.RewardedAdPolicy
 
 @ExposedClass(
     author = "m.araib.shafiq@gmail.com",
-    purpose = "Trait class extension for easy handling of Facebook and AdMob ads",
+    purpose = "Trait class extension for easy handling of Facebook and Admob ads",
     provides = [
         "showBannerAd",
         "removeBannerAd",

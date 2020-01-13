@@ -4,7 +4,8 @@ import java.io.Serializable
 
 sealed class RewardedAdPolicy() : Serializable {
     data class RewardedAdmobPolicy(
-        val adMobAdId: String,
+        val admobAppId: String,
+        val admobAdId: String,
         val admobCallback: RewardedAdCallback.RewardedAdmobCallback? = null,
         var debug: Boolean = false
     ) : RewardedAdPolicy(), Serializable

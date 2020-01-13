@@ -6,7 +6,7 @@ sealed class RewardedAdCallback {
         val onRewardedAdFailedToShow: (() -> Unit)?,
         val onRewardedAdClosed: (() -> Unit)?,
         val onRewardedAdLoaded: (() -> Unit)?,
-        val onRewardedAdLoadFailed: (() -> Unit)?
+        val onRewardedAdFailedToLoad: (() -> Unit)?
     ) : RewardedAdCallback()
 
     class RewardedFacebookCallback(

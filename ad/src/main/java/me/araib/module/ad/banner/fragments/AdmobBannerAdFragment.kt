@@ -13,12 +13,12 @@ import me.araib.module.ad.R
 import me.araib.module.ad.banner.BannerAdCallback
 
 class AdmobBannerAdFragment : BannerAdFragment() {
-    private val adMobAdId by lazy {
-        arguments?.getBundle("data")?.getString("adMobAdId")
-            ?: throw IllegalArgumentException("AdMob ad id not found")
+    private val admobAdId by lazy {
+        arguments?.getBundle("data")?.getString("admobAdId")
+            ?: throw IllegalArgumentException("Admob ad id not found")
     }
 
-    internal var adMobCallback: BannerAdCallback.BannerAdmobCallback? = null
+    internal var admobCallback: BannerAdCallback.BannerAdmobCallback? = null
     internal var debug = false
 
     override fun loadBannerAd(view: ViewGroup?) {
@@ -26,28 +26,28 @@ class AdmobBannerAdFragment : BannerAdFragment() {
 
         admobAdView.apply {
             adSize = AdSize.BANNER
-            adUnitId = adMobAdId
+            adUnitId = admobAdId
             adListener = object : com.google.android.gms.ads.AdListener() {
                 override fun onAdFailedToLoad(p0: Int) {
                     super.onAdFailedToLoad(p0)
                     if (debug)
-                        Log.e(TAG, "AdMob: Unable to load AdMob banner ad code: $p0")
-                    adMobCallback?.onBannerAdFailedToLoad?.invoke()
+                        Log.e(TAG, "Admob: Unable to load Admob banner ad code: $p0")
+                    admobCallback?.onBannerAdFailedToLoad?.invoke()
                 }
 
                 override fun onAdLoaded() {
                     super.onAdLoaded()
                     if (debug)
-                        Log.i(TAG, "AdMob: Banner ad loaded")
-                    adMobCallback?.onBannerAdLoaded?.invoke()
+                        Log.i(TAG, "Admob: Banner ad loaded")
+                    admobCallback?.onBannerAdLoaded?.invoke()
                 }
             }
         }
 
         view?.addView(admobAdView) ?: run {
             if (debug)
-                Log.e(TAG, "AdMob: Banner ad view is null")
-            adMobCallback?.onBannerAdFailedToLoad?.invoke()
+                Log.e(TAG, "Admob: Banner ad view is null")
+            admobCallback?.onBannerAdFailedToLoad?.invoke()
         }
 
         admobAdView.loadAd(AdRequest.Builder().build())
