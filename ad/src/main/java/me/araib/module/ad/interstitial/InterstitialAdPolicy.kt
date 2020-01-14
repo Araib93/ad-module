@@ -7,19 +7,22 @@ sealed class InterstitialAdPolicy() : Serializable {
         val admobAppId: String,
         val admobAdId: String,
         val admobCallback: InterstitialAdCallback.InterstitialAdmobCallback? = null,
-        var debug: Boolean = false
+        var shouldLoadAgain: Boolean = false,
+        var shouldShowLogs: Boolean = false
     ) : InterstitialAdPolicy(), Serializable
 
     data class InterstitialFacebookPolicy(
         val facebookAdId: String,
         val facebookCallback: InterstitialAdCallback.InterstitialFacebookCallback? = null,
-        var debug: Boolean = false
+        var shouldShowAgain: Boolean = false,
+        var shouldShowLogs: Boolean = false
     ) : InterstitialAdPolicy(),
         Serializable
 
     data class InterstitialMopubPolicy(
         val mopubAdId: String,
         val mopubCallback: InterstitialAdCallback.InterstitialMopubCallback? = null,
-        var debug: Boolean = false
+        var shouldShowAgain: Boolean = false,
+        var shouldShowLogs: Boolean = false
     ) : InterstitialAdPolicy(), Serializable
 }

@@ -21,7 +21,7 @@ class FacebookBannerAdFragment : BannerAdFragment() {
     }
 
     internal var facebookCallback: BannerAdCallback.BannerFacebookCallback? = null
-    internal var debug = false
+    internal var shouldShowLogs = false
 
     override fun loadBannerAd(view: ViewGroup?) {
         val facebookAdView = AdView(
@@ -33,7 +33,7 @@ class FacebookBannerAdFragment : BannerAdFragment() {
         facebookAdView.setAdListener(object : FacebookBannerAdListener() {
             override fun onError(p0: Ad?, p1: AdError?) {
                 super.onError(p0, p1)
-                if (debug)
+                if (shouldShowLogs)
                     Log.e(
                         TAG,
                         "Facebook: ${p1?.errorMessage
@@ -45,7 +45,7 @@ class FacebookBannerAdFragment : BannerAdFragment() {
 
             override fun onAdLoaded(p0: Ad?) {
                 super.onAdLoaded(p0)
-                if (debug)
+                if (shouldShowLogs)
                     Log.i(TAG, "Facebook: Banner ad loaded")
                 facebookCallback?.onBannerAdLoaded?.invoke()
                 // Implementation not required
@@ -53,7 +53,7 @@ class FacebookBannerAdFragment : BannerAdFragment() {
         })
 
         view?.addView(facebookAdView) ?: run {
-            if (debug)
+            if (shouldShowLogs)
                 Log.e(TAG, "Facebook: Banner ad view is null")
             facebookCallback?.onBannerAdFailedToLoad?.invoke()
         }

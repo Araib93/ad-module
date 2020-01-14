@@ -19,7 +19,7 @@ class AdmobBannerAdFragment : BannerAdFragment() {
     }
 
     internal var admobCallback: BannerAdCallback.BannerAdmobCallback? = null
-    internal var debug = false
+    internal var shouldShowLogs = false
 
     override fun loadBannerAd(view: ViewGroup?) {
         val admobAdView = AdView(context)
@@ -30,14 +30,14 @@ class AdmobBannerAdFragment : BannerAdFragment() {
             adListener = object : com.google.android.gms.ads.AdListener() {
                 override fun onAdFailedToLoad(p0: Int) {
                     super.onAdFailedToLoad(p0)
-                    if (debug)
+                    if (shouldShowLogs)
                         Log.e(TAG, "Admob: Unable to load Admob banner ad code: $p0")
                     admobCallback?.onBannerAdFailedToLoad?.invoke()
                 }
 
                 override fun onAdLoaded() {
                     super.onAdLoaded()
-                    if (debug)
+                    if (shouldShowLogs)
                         Log.i(TAG, "Admob: Banner ad loaded")
                     admobCallback?.onBannerAdLoaded?.invoke()
                 }
@@ -45,7 +45,7 @@ class AdmobBannerAdFragment : BannerAdFragment() {
         }
 
         view?.addView(admobAdView) ?: run {
-            if (debug)
+            if (shouldShowLogs)
                 Log.e(TAG, "Admob: Banner ad view is null")
             admobCallback?.onBannerAdFailedToLoad?.invoke()
         }
