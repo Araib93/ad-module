@@ -8,7 +8,8 @@ sealed class RewardedAdPolicy() : Serializable {
         val admobAdId: String,
         val admobCallback: RewardedAdCallback.RewardedAdmobCallback? = null,
         var shouldShowAgain: Boolean = false,
-        var shouldShowLogs: Boolean = false
+        var shouldShowLogs: Boolean = false,
+        var isAdRestricted:Boolean = false
     ) : RewardedAdPolicy(), Serializable
 
     data class RewardedFacebookPolicy(

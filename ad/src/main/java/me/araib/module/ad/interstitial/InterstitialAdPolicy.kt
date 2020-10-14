@@ -8,7 +8,8 @@ sealed class InterstitialAdPolicy() : Serializable {
         val admobAdId: String,
         val admobCallback: InterstitialAdCallback.InterstitialAdmobCallback? = null,
         var shouldLoadAgain: Boolean = false,
-        var shouldShowLogs: Boolean = false
+        var shouldShowLogs: Boolean = false,
+        val isAdRestricted: Boolean = false
     ) : InterstitialAdPolicy(), Serializable
 
     data class InterstitialFacebookPolicy(
