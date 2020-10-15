@@ -9,6 +9,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
+import com.google.android.gms.ads.RequestConfiguration
 import me.araib.core.BaseActivity
 import me.araib.module.ad.banner.BannerAdPolicy
 import me.araib.module.ad.banner.fragments.AdmobBannerAdFragment
@@ -114,7 +115,18 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
 
     private fun loadAdmobInterstitialAd(interstitialAdPolicy: InterstitialAdPolicy.InterstitialAdmobPolicy) {
         context?.let { context ->
-            AdmobMobileAds.initialize(context.applicationContext, interstitialAdPolicy.admobAppId)
+            AdmobMobileAds.initialize(context.applicationContext, interstitialAdPolicy.admobAppId).apply {
+
+                //requesting ads based under child and family protection policy
+                if (interstitialAdPolicy.isAdRestricted)
+                    AdmobMobileAds.setRequestConfiguration(
+                        RequestConfiguration.Builder()
+                            .setTagForChildDirectedTreatment(RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE)
+                            .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE)
+                            .setMaxAdContentRating("G")
+                            .build()
+                    )
+            }
             admobInterstitialAd = AdmobInterstitialAd(context)
             admobInterstitialAd.adUnitId = interstitialAdPolicy.admobAdId
 
@@ -209,7 +221,18 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
 
     private fun loadAdmobRewardedAd(rewardedAdPolicy: RewardedAdPolicy.RewardedAdmobPolicy) {
         context?.let { context ->
-            AdmobMobileAds.initialize(context.applicationContext, rewardedAdPolicy.admobAppId)
+            AdmobMobileAds.initialize(context.applicationContext, rewardedAdPolicy.admobAppId).apply {
+
+                //requesting ads based under child and family protection policy
+                if (rewardedAdPolicy.isAdRestricted)
+                    AdmobMobileAds.setRequestConfiguration(
+                        RequestConfiguration.Builder()
+                            .setTagForChildDirectedTreatment(RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE)
+                            .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE)
+                            .setMaxAdContentRating("G")
+                            .build()
+                    )
+            }
             admobRewardedAd = AdmobRewardedAd(context, rewardedAdPolicy.admobAdId)
             val rewardedAdLoadCallback = object : AdmobRewardedAdLoadCallback() {
                 override fun onRewardedAdLoaded() {
@@ -311,7 +334,18 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
 
     private fun showAdmobBannerAd(bannerAdPolicy: BannerAdPolicy.BannerAdmobPolicy) {
         context?.let { context ->
-            AdmobMobileAds.initialize(context.applicationContext, bannerAdPolicy.admobAppId)
+            AdmobMobileAds.initialize(context.applicationContext, bannerAdPolicy.admobAppId).apply {
+
+                //requesting ads based under child and family protection policy
+                if (bannerAdPolicy.isAdRestricted)
+                    AdmobMobileAds.setRequestConfiguration(
+                        RequestConfiguration.Builder()
+                            .setTagForChildDirectedTreatment(RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE)
+                            .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE)
+                            .setMaxAdContentRating("G")
+                            .build()
+                    )
+            }
             bannerAdFragment = AdmobBannerAdFragment()
                 .apply {
                     this.arguments = bundleOf(
