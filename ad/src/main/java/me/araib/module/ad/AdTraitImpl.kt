@@ -1,5 +1,6 @@
 package me.araib.module.ad
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
 import androidx.annotation.IdRes
@@ -9,6 +10,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
+import com.google.android.gms.ads.MobileAds.setRequestConfiguration
 import com.google.android.gms.ads.RequestConfiguration
 import me.araib.core.BaseActivity
 import me.araib.module.ad.banner.BannerAdPolicy
@@ -75,37 +77,42 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
                 facebookInterstitialAd.destroy()
             }
             facebookInterstitialAd = FacebookInterstitialAd(context, interstitialAdPolicy.facebookAdId)
+                    .apply {
+                        setAdListener(object : FacebookInterstitialAdListener() {
+                            override fun onAdLoaded(p0: FacebookAd?) {
+                                super.onAdLoaded(p0)
+                                if (interstitialAdPolicy.shouldShowLogs)
+                                    Log.i(TAG, "Facebook: Interstitial ad loaded")
+                                interstitialAdPolicy.facebookCallback?.onInterstitialAdLoaded?.invoke()
+                            }
 
-            facebookInterstitialAd.setAdListener(object : FacebookInterstitialAdListener() {
-                override fun onAdLoaded(p0: FacebookAd?) {
-                    super.onAdLoaded(p0)
-                    if (interstitialAdPolicy.shouldShowLogs)
-                        Log.i(TAG, "Facebook: Interstitial ad loaded")
-                    interstitialAdPolicy.facebookCallback?.onInterstitialAdLoaded?.invoke()
-                }
+                            override fun onInterstitialDismissed(p0: FacebookAd?) {
+                                super.onInterstitialDismissed(p0)
+                                if (interstitialAdPolicy.shouldShowLogs)
+                                    Log.i(TAG, "Facebook: Interstitial ad dismissed")
+                                interstitialAdPolicy.facebookCallback?.onInterstitialAdDismissed?.invoke()
+                                if (interstitialAdPolicy.shouldShowAgain)
+                                    loadFacebookInterstitialAd(interstitialAdPolicy)
+                            }
 
-                override fun onInterstitialDismissed(p0: FacebookAd?) {
-                    super.onInterstitialDismissed(p0)
-                    if (interstitialAdPolicy.shouldShowLogs)
-                        Log.i(TAG, "Facebook: Interstitial ad dismissed")
-                    interstitialAdPolicy.facebookCallback?.onInterstitialAdDismissed?.invoke()
-                    if(interstitialAdPolicy.shouldShowAgain)
-                        loadFacebookInterstitialAd(interstitialAdPolicy)
-                }
-
-                override fun onError(p0: FacebookAd?, p1: FacebookAdError?) {
-                    super.onError(p0, p1)
-                    if (interstitialAdPolicy.shouldShowLogs)
-                        Log.e(
-                            TAG,
-                            "Facebook: ${p1?.errorMessage
-                                ?: "Unable to load Facebook banner ad"} code: ${p1?.errorCode
-                                ?: "Unknown"}"
-                        )
-                    interstitialAdPolicy.facebookCallback?.onInterstitialAdError?.invoke()
-                }
-            })
-            facebookInterstitialAd.loadAd()
+                            override fun onError(p0: FacebookAd?, p1: FacebookAdError?) {
+                                super.onError(p0, p1)
+                                if (interstitialAdPolicy.shouldShowLogs)
+                                    Log.e(
+                                            TAG,
+                                            "Facebook: ${
+                                                p1?.errorMessage
+                                                        ?: "Unable to load Facebook banner ad"
+                                            } code: ${
+                                                p1?.errorCode
+                                                        ?: "Unknown"
+                                            }"
+                                    )
+                                interstitialAdPolicy.facebookCallback?.onInterstitialAdError?.invoke()
+                            }
+                        })
+                        loadAd()
+                    }
         } ?: run {
             if (interstitialAdPolicy.shouldShowLogs)
                 Log.e(TAG, "Facebook: Interstitial ad failed to load, Context is null")
@@ -113,49 +120,51 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
         }
     }
 
+    @SuppressLint("MissingPermission")
     private fun loadAdmobInterstitialAd(interstitialAdPolicy: InterstitialAdPolicy.InterstitialAdmobPolicy) {
         context?.let { context ->
             AdmobMobileAds.initialize(context.applicationContext, interstitialAdPolicy.admobAppId).apply {
-
                 //requesting ads based under child and family protection policy
                 if (interstitialAdPolicy.isAdRestricted)
-                    AdmobMobileAds.setRequestConfiguration(
-                        RequestConfiguration.Builder()
-                            .setTagForChildDirectedTreatment(RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE)
-                            .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE)
-                            .setMaxAdContentRating("G")
-                            .build()
+                    setRequestConfiguration(
+                            RequestConfiguration.Builder()
+                                    .setTagForChildDirectedTreatment(RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE)
+                                    .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE)
+                                    .setMaxAdContentRating("G")
+                                    .build()
                     )
             }
             admobInterstitialAd = AdmobInterstitialAd(context)
-            admobInterstitialAd.adUnitId = interstitialAdPolicy.admobAdId
+                    .apply {
+                        adUnitId = interstitialAdPolicy.admobAdId
 
-            admobInterstitialAd.adListener = object : AdmobAdListener() {
-                override fun onAdLoaded() {
-                    super.onAdLoaded()
-                    if (interstitialAdPolicy.shouldShowLogs)
-                        Log.i(TAG, "Admob: Interstitial ad loaded")
-                    interstitialAdPolicy.admobCallback?.onInterstitialAdLoaded?.invoke()
-                }
+                        adListener = object : AdmobAdListener() {
+                            override fun onAdLoaded() {
+                                super.onAdLoaded()
+                                if (interstitialAdPolicy.shouldShowLogs)
+                                    Log.i(TAG, "Admob: Interstitial ad loaded")
+                                interstitialAdPolicy.admobCallback?.onInterstitialAdLoaded?.invoke()
+                            }
 
-                override fun onAdClosed() {
-                    super.onAdClosed()
-                    if (interstitialAdPolicy.shouldShowLogs)
-                        Log.i(TAG, "Admob: Interstitial ad closed")
-                    interstitialAdPolicy.admobCallback?.onInterstitialAdClosed?.invoke()
-                    if (interstitialAdPolicy.shouldLoadAgain)
-                        loadAdmobInterstitialAd(interstitialAdPolicy)
-                }
+                            override fun onAdClosed() {
+                                super.onAdClosed()
+                                if (interstitialAdPolicy.shouldShowLogs)
+                                    Log.i(TAG, "Admob: Interstitial ad closed")
+                                interstitialAdPolicy.admobCallback?.onInterstitialAdClosed?.invoke()
+                                if (interstitialAdPolicy.shouldLoadAgain)
+                                    loadAdmobInterstitialAd(interstitialAdPolicy)
+                            }
 
-                override fun onAdFailedToLoad(p0: Int) {
-                    super.onAdFailedToLoad(p0)
-                    if (interstitialAdPolicy.shouldShowLogs)
-                        Log.e(TAG, "Admob: Unable to load Admob banner ad code: $p0")
-                    interstitialAdPolicy.admobCallback?.onInterstitialAdFailedToLoad?.invoke()
-                }
-            }
+                            override fun onAdFailedToLoad(p0: Int) {
+                                super.onAdFailedToLoad(p0)
+                                if (interstitialAdPolicy.shouldShowLogs)
+                                    Log.e(TAG, "Admob: Unable to load Admob banner ad code: $p0")
+                                interstitialAdPolicy.admobCallback?.onInterstitialAdFailedToLoad?.invoke()
+                            }
+                        }
 
-            admobInterstitialAd.loadAd(AdmobAdRequest.Builder().build())
+                        loadAd(AdmobAdRequest.Builder().build())
+                    }
         } ?: run {
             if (interstitialAdPolicy.shouldShowLogs)
                 Log.e(TAG, "Admob: Interstitial ad failed to load, Context is null")
@@ -166,10 +175,10 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
     override fun showInterstitialAd(interstitialAdPolicy: InterstitialAdPolicy) {
         when (interstitialAdPolicy) {
             is InterstitialAdPolicy.InterstitialFacebookPolicy -> showFacebookInterstitialAd(
-                interstitialAdPolicy
+                    interstitialAdPolicy
             )
             is InterstitialAdPolicy.InterstitialAdmobPolicy -> showAdmobInterstitialAd(
-                interstitialAdPolicy
+                    interstitialAdPolicy
             )
             is InterstitialAdPolicy.InterstitialMopubPolicy -> {
                 throw IllegalArgumentException("MoPub Interstitial Ad support is currently in progress")
@@ -219,37 +228,40 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
         }
     }
 
+    @SuppressLint("MissingPermission")
     private fun loadAdmobRewardedAd(rewardedAdPolicy: RewardedAdPolicy.RewardedAdmobPolicy) {
         context?.let { context ->
-            AdmobMobileAds.initialize(context.applicationContext, rewardedAdPolicy.admobAppId).apply {
-
-                //requesting ads based under child and family protection policy
-                if (rewardedAdPolicy.isAdRestricted)
-                    AdmobMobileAds.setRequestConfiguration(
-                        RequestConfiguration.Builder()
-                            .setTagForChildDirectedTreatment(RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE)
-                            .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE)
-                            .setMaxAdContentRating("G")
-                            .build()
-                    )
-            }
+            AdmobMobileAds.initialize(context.applicationContext, rewardedAdPolicy.admobAppId)
+                    .apply {
+                        //requesting ads based under child and family protection policy
+                        if (rewardedAdPolicy.isAdRestricted)
+                            setRequestConfiguration(
+                                    RequestConfiguration.Builder()
+                                            .setTagForChildDirectedTreatment(RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE)
+                                            .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE)
+                                            .setMaxAdContentRating("G")
+                                            .build()
+                            )
+                    }
             admobRewardedAd = AdmobRewardedAd(context, rewardedAdPolicy.admobAdId)
-            val rewardedAdLoadCallback = object : AdmobRewardedAdLoadCallback() {
-                override fun onRewardedAdLoaded() {
-                    super.onRewardedAdLoaded()
-                    if (rewardedAdPolicy.shouldShowLogs)
-                        Log.i(TAG, "Admob: Rewarded ad loaded")
-                    rewardedAdPolicy.admobCallback?.onRewardedAdLoaded?.invoke()
-                }
+                    .apply {
+                        val rewardedAdLoadCallback = object : AdmobRewardedAdLoadCallback() {
+                            override fun onRewardedAdLoaded() {
+                                super.onRewardedAdLoaded()
+                                if (rewardedAdPolicy.shouldShowLogs)
+                                    Log.i(TAG, "Admob: Rewarded ad loaded")
+                                rewardedAdPolicy.admobCallback?.onRewardedAdLoaded?.invoke()
+                            }
 
-                override fun onRewardedAdFailedToLoad(p0: Int) {
-                    super.onRewardedAdFailedToLoad(p0)
-                    if (rewardedAdPolicy.shouldShowLogs)
-                        Log.e(TAG, "Admob: Unable to show Admob Rewarded Ad code: $p0")
-                    rewardedAdPolicy.admobCallback?.onRewardedAdFailedToLoad?.invoke()
-                }
-            }
-            admobRewardedAd.loadAd(AdmobAdRequest.Builder().build(), rewardedAdLoadCallback)
+                            override fun onRewardedAdFailedToLoad(p0: Int) {
+                                super.onRewardedAdFailedToLoad(p0)
+                                if (rewardedAdPolicy.shouldShowLogs)
+                                    Log.e(TAG, "Admob: Unable to show Admob Rewarded Ad code: $p0")
+                                rewardedAdPolicy.admobCallback?.onRewardedAdFailedToLoad?.invoke()
+                            }
+                        }
+                        loadAd(AdmobAdRequest.Builder().build(), rewardedAdLoadCallback)
+                    }
         } ?: run {
             if (rewardedAdPolicy.shouldShowLogs)
                 Log.e(TAG, "Admob: Rewarded ad failed to load, Context is null")
@@ -280,7 +292,7 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
             val rewardedAdCallback = object : AdmobRewardedAdCallback() {
                 override fun onUserEarnedReward(rewardItem: AdmobRewardItem) {
                     val reward =
-                        RewardItem.AdmobRewardItem(rewardItem.amount, rewardItem.type)
+                            RewardItem.AdmobRewardItem(rewardItem.amount, rewardItem.type)
                     if (rewardedAdPolicy.shouldShowLogs)
                         Log.i(TAG, "Admob: Reward earned")
                     rewardedAdPolicy.admobCallback?.onRewardEarned?.invoke(reward)
@@ -298,7 +310,7 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
                     if (rewardedAdPolicy.shouldShowLogs)
                         Log.i(TAG, "Admob: Rewarded ad closed")
                     rewardedAdPolicy.admobCallback?.onRewardedAdClosed?.invoke()
-                    if(rewardedAdPolicy.shouldShowAgain)
+                    if (rewardedAdPolicy.shouldShowAgain)
                         loadAdmobRewardedAd(rewardedAdPolicy)
                 }
             }
@@ -310,9 +322,9 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
     }
 
     override fun showBannerAd(
-        fragmentManager: FragmentManager,
-        @IdRes replaceLayout: Int,
-        bannerAdPolicy: BannerAdPolicy
+            fragmentManager: FragmentManager,
+            @IdRes replaceLayout: Int,
+            bannerAdPolicy: BannerAdPolicy
     ) {
         when (bannerAdPolicy) {
             is BannerAdPolicy.BannerFacebookPolicy -> {
@@ -327,35 +339,36 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
         }
 
         fragmentManager
-            .beginTransaction()
-            .replace(replaceLayout, bannerAdFragment)
-            .commit()
+                .beginTransaction()
+                .replace(replaceLayout, bannerAdFragment)
+                .commit()
     }
 
+    @SuppressLint("MissingPermission")
     private fun showAdmobBannerAd(bannerAdPolicy: BannerAdPolicy.BannerAdmobPolicy) {
         context?.let { context ->
-            AdmobMobileAds.initialize(context.applicationContext, bannerAdPolicy.admobAppId).apply {
-
-                //requesting ads based under child and family protection policy
-                if (bannerAdPolicy.isAdRestricted)
-                    AdmobMobileAds.setRequestConfiguration(
-                        RequestConfiguration.Builder()
-                            .setTagForChildDirectedTreatment(RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE)
-                            .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE)
-                            .setMaxAdContentRating("G")
-                            .build()
-                    )
-            }
+            AdmobMobileAds.initialize(context.applicationContext, bannerAdPolicy.admobAppId)
+                    .apply {
+                        //requesting ads based under child and family protection policy
+                        if (bannerAdPolicy.isAdRestricted)
+                            setRequestConfiguration(
+                                    RequestConfiguration.Builder()
+                                            .setTagForChildDirectedTreatment(RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE)
+                                            .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE)
+                                            .setMaxAdContentRating("G")
+                                            .build()
+                            )
+                    }
             bannerAdFragment = AdmobBannerAdFragment()
-                .apply {
-                    this.arguments = bundleOf(
-                        "data" to bundleOf(
-                            "admobAdId" to bannerAdPolicy.admobAdId
+                    .apply {
+                        this.arguments = bundleOf(
+                                "data" to bundleOf(
+                                        "admobAdId" to bannerAdPolicy.admobAdId
+                                )
                         )
-                    )
-                    this.shouldShowLogs = bannerAdPolicy.shouldShowLogs
-                    this.admobCallback = bannerAdPolicy.admobCallback
-                }
+                        this.shouldShowLogs = bannerAdPolicy.shouldShowLogs
+                        this.admobCallback = bannerAdPolicy.admobCallback
+                    }
         } ?: run {
             if (bannerAdPolicy.shouldShowLogs)
                 Log.e(TAG, "Admob: Banner ad failed to show, Context is null")
@@ -367,15 +380,15 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
         context?.let { context ->
             FacebookAudienceNetworkAds.initialize(context.applicationContext)
             bannerAdFragment = FacebookBannerAdFragment()
-                .apply {
-                    this.arguments = bundleOf(
-                        "data" to bundleOf(
-                            "facebookAdId" to bannerAdPolicy.facebookAdId
+                    .apply {
+                        this.arguments = bundleOf(
+                                "data" to bundleOf(
+                                        "facebookAdId" to bannerAdPolicy.facebookAdId
+                                )
                         )
-                    )
-                    this.shouldShowLogs = bannerAdPolicy.shouldShowLogs
-                    this.facebookCallback = bannerAdPolicy.facebookCallback
-                }
+                        this.shouldShowLogs = bannerAdPolicy.shouldShowLogs
+                        this.facebookCallback = bannerAdPolicy.facebookCallback
+                    }
         } ?: run {
             if (bannerAdPolicy.shouldShowLogs)
                 Log.e(TAG, "Facebook: Banner ad failed to show, Context is null")
@@ -386,9 +399,9 @@ class AdTraitImpl : LifecycleObserver, AdTrait {
     override fun removeBannerAd(fragmentManager: FragmentManager): Boolean {
         if (::bannerAdFragment.isInitialized && bannerAdFragment.isAdded) {
             fragmentManager
-                .beginTransaction()
-                .remove(bannerAdFragment)
-                .commit()
+                    .beginTransaction()
+                    .remove(bannerAdFragment)
+                    .commit()
             return true
         }
         return false
